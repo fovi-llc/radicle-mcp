@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "radicle-mcp"
+version = "0.1.0"
+description = "MCP server for Radicle version control system"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "mcp>=1.0.0",
+    "click>=8.0.0",
+]
+
+[project.scripts]
+radicle-mcp = "radicle_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/radicle_mcp"]

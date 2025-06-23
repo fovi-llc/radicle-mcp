@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Radicle MCP Server",
+			"type": "shell",
+			"command": "/workspaces/python/radicle-mcp/.venv/bin/python",
+			"args": [
+				"-m",
+				"radicle_mcp.server"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

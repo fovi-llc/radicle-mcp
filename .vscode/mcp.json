@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "radicle-mcp": {
+      "type": "stdio",
+      "command": "/workspaces/python/radicle-mcp/.venv/bin/python",
+      "args": ["-m", "radicle_mcp.server"]
+    }
+  }
+}
