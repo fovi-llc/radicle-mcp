@@ -1,10 +1,25 @@
-# Radicle MCP Server
+# Radicle + GitHub MCP Server
 
-A Model Context Protocol (MCP) server that provides tools for interacting with Radicle, a peer-to-peer code collaboration network.
+A Model Context Protocol (MCP) server setup that provides tools for interacting with both Radicle (peer-to-peer code collaboration) and GitHub through a unified interface.
 
 ## Features
 
-This MCP server wraps common Radicle CLI commands as MCP tools, allowing AI assistants to:
+This setup includes two MCP servers:
+
+### 🌟 Radicle MCP Server (Python)
+- **Repository Management**: Initialize, clone, and inspect Radicle repositories
+- **Synchronization**: Sync repositories with the Radicle network
+- **Patches & Issues**: List and manage patches and issues
+- **Node Information**: Get node ID and remote information
+- **Help System**: Access Radicle command documentation
+
+### 🐙 GitHub MCP Server (Official)
+- **Repository Operations**: Create, fork, clone GitHub repositories
+- **Issue Management**: Create, update, and manage GitHub issues
+- **Pull Requests**: Manage pull requests and reviews
+- **File Operations**: Read, write, and manage repository files
+- **Search**: Search repositories, issues, and code
+- **User Management**: Manage user and organization information
 
 - **Repository Management**: Initialize, clone, and inspect Radicle repositories
 - **Synchronization**: Sync repositories with the Radicle network
@@ -38,10 +53,21 @@ This MCP server wraps common Radicle CLI commands as MCP tools, allowing AI assi
    curl -sSf https://install.radicle.xyz | sh
    ```
 
-2. **Python Environment**: Python 3.8+ with the MCP library
+2. **Deno**: For running the GitHub MCP server
+   ```bash
+   # Install Deno
+   curl -fsSL https://deno.land/install.sh | sh
+   ```
+
+3. **Python Environment**: Python 3.8+ with the MCP library
    ```bash
    pip install mcp
    ```
+
+4. **GitHub Personal Access Token**: For GitHub integration
+   - Go to https://github.com/settings/tokens
+   - Create a new token with repo, issues, and pull request permissions
+   - Set as environment variable: `GITHUB_PERSONAL_ACCESS_TOKEN`
 
 ## Installation
 
@@ -50,17 +76,38 @@ This MCP server wraps common Radicle CLI commands as MCP tools, allowing AI assi
    ```bash
    pip install -e .
    ```
+3. Install the official GitHub MCP server:
+   ```bash
+   deno install -g --name github-mcp npm:@modelcontextprotocol/server-github
+   ```
+4. Run the setup script:
+   ```bash
+   python setup_mcp.py
+   ```
 
 ## Usage
 
-### As a Standalone Server
+### Quick Setup
 ```bash
+# Set your GitHub token
+export GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here
+
+# Run the setup script
+python setup_mcp.py
+```
+
+### As Standalone Servers
+```bash
+# Radicle MCP Server
 python -m radicle_mcp.server
+
+# GitHub MCP Server  
+github-mcp
 ```
 
 ### With Claude Desktop
 
-Add to your Claude Desktop configuration (`claude_desktop_config.json`):
+The setup script automatically creates the configuration. Your `claude_desktop_config.json` will include:
 
 ```json
 {
@@ -68,6 +115,13 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
     "radicle-mcp": {
       "command": "/path/to/python",
       "args": ["-m", "radicle_mcp.server"]
+    },
+    "github-mcp": {
+      "command": "/path/to/github-mcp",
+      "args": [],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }
@@ -79,13 +133,26 @@ This project includes VS Code configuration for debugging the MCP server. Use th
 
 ## Example Commands
 
-Once connected to an MCP client, you can use natural language to interact with Radicle:
+Once connected to an MCP client, you can use natural language to interact with both platforms:
 
+### Radicle Operations
 - "Initialize a new Radicle repository called 'my-project'"
 - "Clone the repository with RID rad:z2..."
 - "Show me the current patches in this repository"
 - "Sync this repository with the network"
 - "What's my Radicle node ID?"
+
+### GitHub Operations  
+- "Create a new GitHub repository called 'awesome-project'"
+- "List my recent GitHub repositories"
+- "Create an issue titled 'Bug fix needed'"
+- "Show me open pull requests in my repository"
+- "Search for repositories related to 'machine learning'"
+
+### Cross-Platform Workflows
+- "Publish this Radicle repository to GitHub"
+- "Sync issues between Radicle and GitHub"
+- "Compare this repository on both platforms"
 
 ## Development
 

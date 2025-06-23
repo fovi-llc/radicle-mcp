@@ -4,6 +4,14 @@
       "type": "stdio",
       "command": "/workspaces/python/radicle-mcp/.venv/bin/python",
       "args": ["-m", "radicle_mcp.server"]
+    },
+    "github-mcp": {
+      "type": "stdio",
+      "command": "/home/vscode/.deno/bin/github-mcp",
+      "args": [],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }
