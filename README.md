@@ -12,6 +12,7 @@ This setup includes two MCP servers:
 - **Patches & Issues**: List and manage patches and issues
 - **Node Information**: Get node ID and remote information
 - **Help System**: Access Radicle command documentation
+- **🔄 GitHub Integration**: Bidirectional sync of issues and PRs between GitHub and Radicle
 
 ### 🐙 GitHub MCP Server (Official)
 - **Repository Operations**: Create, fork, clone GitHub repositories
@@ -21,11 +22,12 @@ This setup includes two MCP servers:
 - **Search**: Search repositories, issues, and code
 - **User Management**: Manage user and organization information
 
-- **Repository Management**: Initialize, clone, and inspect Radicle repositories
-- **Synchronization**: Sync repositories with the Radicle network
-- **Patches & Issues**: List and manage patches and issues
-- **Node Information**: Get node ID and remote information
-- **Help System**: Access Radicle command documentation
+### 🔗 GitHub ↔ Radicle Synchronization
+- **Bidirectional Issue Sync**: Automatically sync issues between platforms
+- **Idempotent Operations**: Safe to run multiple times without duplicates
+- **Metadata Preservation**: Maintains original author, links, and timestamps
+- **Mapping Database**: Tracks relationships between GitHub and Radicle items
+- **MCP Integration**: Available as AI assistant tools
 
 ## Available Tools
 
@@ -95,6 +97,30 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here
 # Run the setup script
 python setup_mcp.py
 ```
+
+### GitHub ↔ Radicle Sync
+```bash
+# Test sync connectivity
+python demo_sync.py
+
+# Create a test issue (optional)
+python create_test_issue.py
+
+# Run full sync
+python github_radicle_sync.py
+
+# Or use CLI interface
+python sync_cli.py --repo owner/repo --dry-run
+python sync_cli.py --repo owner/repo --issues-only
+```
+
+### MCP Integration
+The sync functionality is available as MCP tools:
+- `github_sync_test`: Test connectivity
+- `github_sync_issues`: Sync issues only  
+- `github_sync_full`: Full bidirectional sync
+
+See [SYNC_README.md](SYNC_README.md) for detailed sync documentation.
 
 ### As Standalone Servers
 ```bash

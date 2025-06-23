@@ -11,10 +11,20 @@ import subprocess
 import json
 import logging
 import sys
+import os
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
+
+# Import our sync functionality
+try:
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.parent))
+    from github_radicle_sync import GitHubRadicleSyncer
+    SYNC_AVAILABLE = True
+except ImportError:
+    SYNC_AVAILABLE = False
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -259,6 +269,120 @@ async def rad_help(command: Optional[str] = None) -> str:
         return f"📖 Radicle Help:\n{result['stdout']}"
     else:
         return f"❌ Failed to get help: {result['stderr']}"
+
+
+# GitHub Sync Tools (if available)
+if SYNC_AVAILABLE:
+    @mcp.tool()
+    async def github_sync_test(github_repo: str, github_token: Optional[str] = None) -> str:
+        """
+        Test GitHub ↔ Radicle sync connectivity.
+        
+        Args:
+            github_repo: GitHub repository in format 'owner/repo'
+            github_token: GitHub personal access token (or set GITHUB_PERSONAL_ACCESS_TOKEN env var)
+        """
+        try:
+            token = github_token or os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
+            if not token:
+                return "❌ GitHub token required. Set GITHUB_PERSONAL_ACCESS_TOKEN or provide github_token parameter"
+            
+            syncer = GitHubRadicleSyncer(token, github_repo)
+            
+            # Test connectivity
+            github_issues = syncer.github.get_issues()
+            radicle_issues = await syncer.radicle.get_issues()
+            github_prs = syncer.github.get_pull_requests()
+            radicle_patches = await syncer.radicle.get_patches()
+            
+            result = f"✅ GitHub ↔ Radicle sync connectivity test successful!\n\n"
+            result += f"📊 Current state:\n"
+            result += f"  GitHub issues: {len(github_issues)}\n"
+            result += f"  Radicle issues: {len(radicle_issues)}\n"
+            result += f"  GitHub PRs: {len(github_prs)}\n"
+            result += f"  Radicle patches: {len(radicle_patches)}\n"
+            result += f"  Existing mappings: {len(syncer.db.data.get('issues', {}))} issues, {len(syncer.db.data.get('patches', {}))} patches\n"
+            result += f"  Last sync: {syncer.db.data.get('last_sync', 'Never')}"
+            
+            return result
+            
+        except Exception as e:
+            return f"❌ Sync test failed: {str(e)}"
+
+    @mcp.tool()
+    async def github_sync_issues(github_repo: str, github_token: Optional[str] = None, direction: str = "both") -> str:
+        """
+        Synchronize issues between GitHub and Radicle.
+        
+        Args:
+            github_repo: GitHub repository in format 'owner/repo'
+            github_token: GitHub personal access token (or set GITHUB_PERSONAL_ACCESS_TOKEN env var)
+            direction: Sync direction - 'both', 'github-to-radicle', or 'radicle-to-github'
+        """
+        try:
+            token = github_token or os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
+            if not token:
+                return "❌ GitHub token required. Set GITHUB_PERSONAL_ACCESS_TOKEN or provide github_token parameter"
+            
+            syncer = GitHubRadicleSyncer(token, github_repo)
+            
+            results = {}
+            
+            if direction in ["both", "github-to-radicle"]:
+                results["github_to_radicle"] = await syncer.sync_issues_github_to_radicle()
+            
+            if direction in ["both", "radicle-to-github"]:
+                results["radicle_to_github"] = await syncer.sync_issues_radicle_to_github()
+            
+            syncer.db.data["last_sync"] = syncer.db.data.get("last_sync", "")
+            syncer.db.save_db()
+            
+            result = f"✅ Issue synchronization complete!\n\n"
+            result += f"📊 Results:\n"
+            for key, value in results.items():
+                result += f"  {key}: {value}\n"
+            
+            return result
+            
+        except Exception as e:
+            return f"❌ Issue sync failed: {str(e)}"
+
+    @mcp.tool()
+    async def github_sync_full(github_repo: str, github_token: Optional[str] = None) -> str:
+        """
+        Perform full bidirectional sync between GitHub and Radicle (issues and patches).
+        
+        Args:
+            github_repo: GitHub repository in format 'owner/repo'
+            github_token: GitHub personal access token (or set GITHUB_PERSONAL_ACCESS_TOKEN env var)
+        """
+        try:
+            token = github_token or os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
+            if not token:
+                return "❌ GitHub token required. Set GITHUB_PERSONAL_ACCESS_TOKEN or provide github_token parameter"
+            
+            syncer = GitHubRadicleSyncer(token, github_repo)
+            results = await syncer.sync_all()
+            
+            result = f"✅ Full synchronization complete!\n\n"
+            result += f"📊 Results:\n"
+            result += f"  Issues GitHub → Radicle: {results['issues_gh_to_rad']}\n"
+            result += f"  Issues Radicle → GitHub: {results['issues_rad_to_gh']}\n"
+            result += f"  Patches GitHub → Radicle: {results['patches_gh_to_rad']}\n"
+            result += f"  Patches Radicle → GitHub: {results['patches_rad_to_gh']}\n"
+            
+            return result
+            
+        except Exception as e:
+            return f"❌ Full sync failed: {str(e)}"
+
+else:
+    @mcp.tool()
+    async def github_sync_unavailable() -> str:
+        """
+        GitHub sync functionality is not available.
+        """
+        return "❌ GitHub sync functionality not available. Please ensure the github_radicle_sync module is properly installed."
 
 
 def main():

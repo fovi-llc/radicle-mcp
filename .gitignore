@@ -1,1 +1,17 @@
 .venv
+
+# Sync database files (contain local mappings)
+.radicle_github_sync.json
+*.sync.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/settings.json
+
+# Environment files
+.env
+.env.local
